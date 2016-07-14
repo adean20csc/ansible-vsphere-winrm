@@ -1,0 +1,21 @@
+---
+
+- name: Ansible / WinRM / VMware vSphere Guest Tools 
+  hosts: windows
+  gather_facts: False
+  tasks:
+    - name: Enable WinRM to be used with Ansible 
+      local_action:
+        module: vmware_vm_shell
+        hostname: 10.53.252.111
+        username: Administrator@vsphere.local
+        password: "{{ vsphere_password }}" 
+        vm_username: Administrator
+        vm_password: "{{ vm_password }}"
+        vm_id: ansible-tools
+        vm_shell: 'c:\windows\system32\windowspowershell\v1.0\powershell.exe'
+        vm_shell_args: "{{ item }}" 
+      with_items:
+        - '-command "& {Set-ExecutionPolicy Unrestricted}"'
+        - '-command "& {Invoke-Expression ((New-Object System.Net.Webclient).DownloadString(\"https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1\"))}"'
+        - '-command "& {Set-ExecutionPolicy RemoteSigned}"'
